@@ -2,6 +2,7 @@ import React from 'react';
 
 interface ImagePreviewProps {
   originalImage: string;
+  originalFileType?: string | null;
   processedImage?: string;
   onDownload: () => void;
   onReset: () => void;
@@ -13,6 +14,7 @@ interface ImagePreviewProps {
 
 const ImagePreview: React.FC<ImagePreviewProps> = ({
   originalImage,
+  originalFileType = null,
   processedImage,
   onDownload,
   onReset,
@@ -138,11 +140,19 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
               <h3 className="font-semibold text-gray-800 text-lg">Original Image</h3>
             </div>
             <div className="flex-1 p-6 flex items-center justify-center bg-gray-50">
-              <img
-                src={originalImage}
-                alt="Original"
-                className="max-w-full max-h-full object-contain rounded-lg shadow-md"
-              />
+              {originalFileType === 'application/pdf' ? (
+                <embed
+                  src={originalImage}
+                  type="application/pdf"
+                  className="w-full h-full rounded-lg shadow-md"
+                />
+              ) : (
+                <img
+                  src={originalImage}
+                  alt="Original"
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-md"
+                />
+              )}
             </div>
           </div>
 

@@ -12,6 +12,7 @@ const ImageProcessingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [maskType, setMaskType] = useState('pixelate');
   const [currentFile, setCurrentFile] = useState<File | null>(null);
+  const [originalFileType, setOriginalFileType] = useState<string | null>(null);
 
   const processImage = async (file: File, selectedMaskType: string) => {
     try {
@@ -44,6 +45,7 @@ const ImageProcessingPage: React.FC = () => {
   const handleImageSelect = async (file: File) => {
     const originalUrl = URL.createObjectURL(file);
     setOriginalImage(originalUrl);
+    setOriginalFileType(file.type);
     setCurrentFile(file);
     
     await processImage(file, maskType);
@@ -75,6 +77,7 @@ const ImageProcessingPage: React.FC = () => {
     if (processedImage) URL.revokeObjectURL(processedImage);
     
     setOriginalImage(null);
+    setOriginalFileType(null);
     setProcessedImage(null);
     setError(null);
     setCurrentFile(null);
@@ -131,6 +134,7 @@ const ImageProcessingPage: React.FC = () => {
           <div className="flex-1">
             <ImagePreview
               originalImage={originalImage}
+              originalFileType={originalFileType}
               processedImage={processedImage || undefined}
               onDownload={handleDownload}
               onReset={handleReset}

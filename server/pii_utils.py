@@ -7,6 +7,7 @@ PII_PATTERNS = {
     "aadhaar": r"\b\d{4}\s?\d{4}\s?\d{4}\b",
     "dob": r"\b\d{2}[-/]\d{2}[-/]\d{4}\b",
     "pan": r"[A-Z]{5}[0-9]{4}[A-Z]{1}",
+    "driving_license": r"\b[A-Z]{2}\d{13}\b",
     "address": r"\b\d+[A-Za-z\s,.-]+(?:Road|Street|Avenue|Lane|Plot|Block|Sector|Nagar|Colony|Park|Market|Chowk|Gali|Mohalla)\b",
 }
 

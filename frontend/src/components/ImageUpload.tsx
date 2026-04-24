@@ -8,9 +8,14 @@ interface ImageUploadProps {
 const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading = false }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const isSupportedFile = (file: File) => {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    return file.type.startsWith('image/') || isPdf;
+  };
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && isSupportedFile(file)) {
       onImageSelect(file);
     }
   };
@@ -25,7 +30,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading = fals
     event.stopPropagation();
     
     const files = event.dataTransfer.files;
-    if (files.length > 0 && files[0].type.startsWith('image/')) {
+    if (files.length > 0 && isSupportedFile(files[0])) {
       onImageSelect(files[0]);
     }
   };
@@ -50,7 +55,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading = fals
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,application/pdf"
           onChange={handleFileSelect}
           className="hidden"
         />
@@ -78,7 +83,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading = fals
           
           <div className="space-y-2">
             <p className="text-xl font-semibold text-gray-800">
-              {loading ? 'Processing your image...' : 'Upload an image to detect PII'}
+              {loading ? 'Processing your file...' : 'Upload an image or PDF to detect PII'}
             </p>
             <p className="text-gray-600">
               {loading ? 'Please wait while we analyze your image' : 'Drag and drop your file here, or click to browse'}
@@ -87,6 +92,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, loading = fals
               <span className="bg-white px-3 py-1 rounded-full">PNG</span>
               <span className="bg-white px-3 py-1 rounded-full">JPG</span>
               <span className="bg-white px-3 py-1 rounded-full">JPEG</span>
+              <span className="bg-white px-3 py-1 rounded-full">PDF</span>
             </div>
           </div>
         </div>
