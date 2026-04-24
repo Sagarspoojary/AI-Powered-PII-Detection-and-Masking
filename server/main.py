@@ -108,3 +108,64 @@ async def upload_image(
     buf.seek(0)
 
     return StreamingResponse(buf, media_type="image/png")
+from pydantic import BaseModel
+
+class TextDetectRequest(BaseModel):
+    text: str
+
+@app.post("/detect-text")
+async def detect_text_pii(request: TextDetectRequest):
+    text = request.text
+
+    if llm_available:
+        pii_items = llm_detector.enhanced_pii_detection(text)
+    else:
+        pii_items = _regex_pii_detection(text)
+
+    return {
+        "original_text": text,
+        "pii_detected": pii_items,
+        "masked_text": _mask_text(text, pii_items)
+    }
+
+def _mask_text(text: str, pii_items: list) -> str:
+    masked = text
+    sorted_pii = sorted(pii_items, key=lambda x: len(x.get("value", "")), reverse=True)
+    for item in sorted_pii:
+        value = item.get("value", "")
+        pii_type = item.get("type", "")
+        if value:
+            if pii_type == "aadhaar":
+                # Show last 4 digits: **** **** 9012
+                parts = value.replace(" ", "")
+                masked_val = "**** **** " + parts[-4:]
+            elif pii_type == "pan":
+                # Mask middle: AB***1234F
+                masked_val = value[:2] + "*" * (len(value) - 4) + value[-2:]
+            elif pii_type == "driving_license":
+                # Show state code only: MH***********
+                masked_val = value[:2] + "*" * (len(value) - 2)
+            elif pii_type == "phone":
+                # Show last 4 digits: ******7890
+                masked_val = "*" * (len(value) - 4) + value[-4:]
+            elif pii_type == "email":
+                # Mask username: a***@gmail.com
+                at = value.index("@")
+                masked_val = value[0] + "*" * (at - 1) + value[at:]
+            elif pii_type == "dob":
+                # Mask day and month: **/**/1995
+                parts = value.replace("-", "/").split("/")
+                masked_val = "**/**/" + parts[-1]
+            else:
+                # Generic: mask all characters keep spaces
+                masked_val = "".join("*" if c != " " else " " for c in value)
+            
+            masked = masked.replace(value, masked_val)
+    return masked
+@app.post("/ocr-text")
+async def ocr_text(file: UploadFile = File(...)):
+    contents = await file.read()
+    image = _load_image_from_bytes(contents, file.content_type)
+    ocr_results = perform_ocr(image)
+    text_data = "\n".join([text for _, text, _ in ocr_results])
+    return {"text": text_data}
